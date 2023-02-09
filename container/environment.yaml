@@ -32,3 +32,4 @@ dependencies:
     - boto3
     - rasterio
     - netcdf4
+    - git+https://github.com/metno/fastapi-nordsat-ewc@main
