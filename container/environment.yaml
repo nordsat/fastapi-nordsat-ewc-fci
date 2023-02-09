@@ -1,0 +1,34 @@
+name: fastapi
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - zeromq
+  - pyzmq
+  - pyyaml
+  - trollsift
+  - configobj
+  - netifaces
+  - pip
+  - git
+  - mapserver
+  - pip:
+    - posttroll
+    - wheel
+    - fastapi
+    - uvicorn
+    - httpx
+    - requests
+    - aiofiles
+    - pydantic
+    - starlette
+    - Jinja2
+    - itsdangerous
+    - gunicorn
+    - uvloop
+    - httptools
+    - pyyaml
+    - xarray
+    - boto3
+    - rasterio
+    - netcdf4

@@ -1,0 +1,4 @@
+/home/trygveas/testdata/fastapi-mapscript/natural_enh_with_night_ir_hires-20230209_084500.tif 2023-02-09T08:45:00Z -7000000.0 2000000.0 4400000.0 12000000.0
+/home/trygveas/testdata/fastapi-mapscript/natural_enh_with_night_ir_hires-20230209_090000.tif 2023-02-09T09:00:00Z -7000000.0 2000000.0 4400000.0 12000000.0
+/home/trygveas/testdata/fastapi-mapscript/natural_enh_with_night_ir_hires-20230209_091500.tif 2023-02-09T09:15:00Z -7000000.0 2000000.0 4400000.0 12000000.0
+/home/trygveas/testdata/fastapi-mapscript/natural_enh_with_night_ir_hires-20230209_093000.tif 2023-02-09T09:30:00Z -7000000.0 2000000.0 4400000.0 12000000.0
