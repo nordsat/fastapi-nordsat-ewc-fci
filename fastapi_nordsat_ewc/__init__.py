@@ -1,2 +1,2 @@
-__package__ = "fastapi-nordsat-ewc"
+__package__ = "fastapi_nordsat_ewc"
 __version__ = "0.0.1"

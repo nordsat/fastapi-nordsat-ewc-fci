@@ -21,8 +21,20 @@ FROM ubuntu:22.04
 COPY --from=builder /opt/conda /opt/conda
 COPY --from=builder /usr/bin/micromamba /usr/bin/
 COPY entrypoint.sh /usr/bin/
+COPY ./app /app
+COPY ./start.sh /start.sh
 
-USER 1001
-EXPOSE 40000
+COPY ./gunicorn_conf.py /gunicorn_conf.py
 
-ENTRYPOINT ["/usr/bin/entrypoint.sh"]
+COPY ./start-reload.sh /start-reload.sh
+
+WORKDIR /app
+
+ENV PYTHONPATH=/app:/lib/python3/dist-packages/
+
+EXPOSE 80
+
+# Run the start script, it will check for an /app/prestart.sh script (e.g. for migrations)
+# And then will start Gunicorn with Uvicorn
+CMD ["/start.sh"]
+#ENTRYPOINT ["/usr/bin/entrypoint.sh"]
