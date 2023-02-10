@@ -25,7 +25,8 @@ async def generate_satpy_quicklook(full_request: Request):
     map_object.setSize(10000, 10000)
     map_object.units = mapscript.MS_DD
     map_object.setExtent(-90, 20, 90, 90)
-
+    map_object.setConfigOption('PROJ_LIB', '/opt/conda/envs/fastapi/share/proj/')
+    map_object.applyConfigOptions()
     layer = mapscript.layerObj()
 
     ows_req = mapscript.OWSRequest()

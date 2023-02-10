@@ -30,7 +30,9 @@ COPY ./start-reload.sh /start-reload.sh
 
 WORKDIR /app
 
-ENV PYTHONPATH=/app:/lib/python3/dist-packages/
+ENV PYTHONPATH=/opt/conda/envs/fastapi/lib/python3.9/site-packages:$PYTHONPATH
+ENV PATH=/opt/conda/envs/fastapi/bin/:$PATH
+ENV LD_LIBRARY_PATH=/opt/conda/envs/fastapi/lib/:$LD_LIBRARY_PATH
 
 EXPOSE 8999
 
