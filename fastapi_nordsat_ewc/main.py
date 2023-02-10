@@ -4,8 +4,8 @@
 import fastapi
 from starlette.middleware.cors import CORSMiddleware
 import uvicorn
-from views import dashboard
-from api import endpoint
+from fastapi_nordsat_ewc.views import dashboard
+from fastapi_nordsat_ewc.api import endpoint
 
 app = fastapi.FastAPI(title="NORDSAT MAPSERVER/SCRIPT",
                       description="Demo using fastapi and mapscript to server GEO COGs as OGC WMS",
