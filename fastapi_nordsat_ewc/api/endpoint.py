@@ -76,7 +76,7 @@ async def generate_satpy_quicklook(full_request: Request):
     # ur_x = bounds[2]
     # ur_y = bounds[3]  
     print(ll_x, ll_y, ur_x, ur_y)
-    layer.setProjection('EPSG:3857')
+    layer.setProjection('init=epsg:3857')
     layer.status = 1
     layer.data = selected_file_name or file_names[-1]
     layer.type = mapscript.MS_LAYER_RASTER
