@@ -10,4 +10,3 @@ micromamba create -y -f /tmp/environment.yaml
 /opt/conda/envs/fastapi/bin/pip cache purge
 micromamba remove -y --force git pip
 micromamba clean -a -y
-#### mv /root/.bashrc /opt/conda/.bashrc

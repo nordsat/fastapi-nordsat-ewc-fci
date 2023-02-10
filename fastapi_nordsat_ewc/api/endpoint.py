@@ -1,17 +1,37 @@
 import sys
-import rasterio
+import json
 import mapscript
 import traceback
 import xml.dom.minidom
-
+from datetime import datetime
 from fastapi.responses import HTMLResponse, FileResponse, Response
 from fastapi import Request, APIRouter, Query, HTTPException
 
 router = APIRouter()
 
+def _generate_layer(layer_name, layer_data, start_time, end_time, layer):
+    """Generate a layer based on the metadata from geotiff."""
+
+    layer.setProjection('init=epsg:3857')
+    layer.status = 1
+    layer.data = f"{layer_data['uri']}"
+    layer.type = mapscript.MS_LAYER_RASTER
+    layer.name = layer_name
+    layer.metadata.set("wms_title", layer_name)
+    layer.metadata.set("wms_extent", f"{layer_data['area_extent'][0]} {layer_data['area_extent'][1]} {layer_data['area_extent'][2]} {layer_data['area_extent'][3]}")
+    layer.metadata.set("wms_timeextent", f'{start_time:%Y-%m-%dT%H:%M:%S}Z/{end_time:%Y-%m-%dT%H:%M:%S}Z/PT15M')
+    layer.metadata.set("wms_default", f'{end_time:%Y-%m-%dT%H:%M:%S}Z')
+    print(f"Complete generate layer: ", layer_name)
+
 @router.get("/request", response_class=Response)
-async def generate_satpy_quicklook(full_request: Request):
-    
+async def generate_map_config_and_respond(full_request: Request):
+    """
+    Based on a dynamical updated a json file list generate correct request reply.
+    For GetCapability request generete all layers available with full time range for each layer.
+    The reply will be xml.
+    For GetMap requests generate only the requested layer at the requested time.
+    The reply will we a png image
+    """
     print("Request url scheme:", full_request.url.scheme)
     print("Request url netloc:", full_request.url.netloc)
 
@@ -21,13 +41,15 @@ async def generate_satpy_quicklook(full_request: Request):
     map_object.web.metadata.set("wms_onlineresource", f"{full_request.url.scheme}://{full_request.url.netloc}/request")
     map_object.web.metadata.set("wms_srs", "EPSG:25833 EPSG:3978 EPSG:4326 EPSG:4269 EPSG:3857")
     map_object.web.metadata.set("wms_enable_request", "*")
-    map_object.setProjection("AUTO")
     map_object.setSize(10000, 10000)
     map_object.units = mapscript.MS_DD
     map_object.setExtent(-90, 20, 90, 90)
-    map_object.setConfigOption('PROJ_LIB', '/opt/conda/envs/fastapi/share/proj/')
-    map_object.applyConfigOptions()
-    layer = mapscript.layerObj()
+    try:
+        map_object.setProjection("init=epsg:3857")
+    except Exception:
+        map_object.setConfigOption('PROJ_LIB', '/opt/conda/envs/fastapi/share/proj/')
+        map_object.applyConfigOptions()
+        map_object.setProjection("init=epsg:3857")
 
     ows_req = mapscript.OWSRequest()
     ows_req.type = mapscript.MS_GET_REQUEST
@@ -48,50 +70,36 @@ async def generate_satpy_quicklook(full_request: Request):
     time_stamp = ows_req.getValueByName('TIME')
 
     files_from_file_list = []
-    with open('/home/trygveas/Git/fastapi-nordsat-ewc/app/list-of-files.txt') as f:
-        files_from_file_list = f.readlines()
-    print("files from list", files_from_file_list)
-    file_names = []
-    timestamps = []
-    selected_file_name = None
+    try:
+        with open('/list-of-files.json') as json_file:
+            files_from_file_list = json.load(json_file)
+    except FileNotFoundError:
+        with open('/home/trygveas/Git/fastapi-nordsat-ewc/fastapi_nordsat_ewc/list-of-files.json') as json_file:
+            files_from_file_list = json.load(json_file)
+    parsed_list = {}
     for l in files_from_file_list:
-        file_name, timestamp, ll_x, ll_y, ur_x, ur_y = l.strip().split()
-        timestamps.append(timestamp)
-        file_names.append(file_name)
+        if l['layer'] not in parsed_list:
+            parsed_list[l['layer']] = []
+        parsed_list[l['layer']].append({'uri': l['uri'],
+                                               'start_time': l['start_time'],
+                                               'area_extent': l['area_extent']})
+    for layer_name in parsed_list:
+        layer_data_sorted = sorted(parsed_list[layer_name], key=lambda d: d['start_time'])
+        selected_element = None
         if time_stamp:
             print("Need to check a time_stamp")
-            if time_stamp in l:
-                selected_file_name = file_name
-    
-    # try:
-    #     print("Rasterio open")
-    #     dataset = rasterio.open(f'/home/trygveas/testdata/fastapi-mapscript/natural_enh_with_night_ir_hires-20230209_084500.tif')
-    #     print("Rasterio opened")
-    # except rasterio.errors.RasterioIOError:
-    #     exc_info = sys.exc_info()
-    #     traceback.print_exception(*exc_info)
-    #     return None
-    # bounds = dataset.bounds
-    # ll_x = bounds[0]
-    # ll_y = bounds[1]
-    # ur_x = bounds[2]
-    # ur_y = bounds[3]  
-    print(ll_x, ll_y, ur_x, ur_y)
-    layer.setProjection('init=epsg:3857')
-    layer.status = 1
-    layer.data = selected_file_name or file_names[-1]
-    layer.type = mapscript.MS_LAYER_RASTER
-    layer.name = 'natural_enh_with_night_ir'
-    start_time = timestamps[0]
-    end_time = timestamps[-1]
-    layer.metadata.set("wms_title", 'Natural enhanced with night IR')
-    layer.metadata.set("wms_extent", f"{ll_x} {ll_y} {ur_x} {ur_y}")
-    layer.metadata.set("wms_timeextent", f'{start_time}/{end_time}/PT15M')
-    layer.metadata.set("wms_default", f'{end_time}')
-    # dataset.close()
-    print("Complete generate layer")
+            for element in layer_data_sorted:
+                if time_stamp in element['start_time']:
+                    selected_element = element
+                    break
+        if not selected_element:
+            selected_element = layer_data_sorted[-1]
+        start_time = datetime.strptime(layer_data_sorted[0]['start_time'], "%Y-%m-%dT%H:%M:%SZ")
+        end_time = datetime.strptime(layer_data_sorted[-1]['start_time'], "%Y-%m-%dT%H:%M:%SZ")
+        layer = mapscript.layerObj()
+        _generate_layer(layer_name, selected_element, start_time, end_time, layer)
+        layer_no = map_object.insertLayer(layer)
 
-    layer_no = map_object.insertLayer(layer)
     map_object.save(f'./satpy-products-testets.map')
 
     print("NumParams", ows_req.NumParams)
