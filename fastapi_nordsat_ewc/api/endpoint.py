@@ -1,3 +1,25 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# Copyright (c) 2023
+
+# Author(s):
+
+#   Trygve Aspenes
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import sys
 import json
 import mapscript
@@ -35,10 +57,15 @@ async def generate_map_config_and_respond(full_request: Request):
     print("Request url scheme:", full_request.url.scheme)
     print("Request url netloc:", full_request.url.netloc)
 
+    netloc = full_request.url.netloc
+    scheme = full_request.url.scheme
+    if '10.0.0.51:8999' in full_request.url.netloc:
+        netloc = '64.225.133.250.nip.io'
+        scheme = 'https'
     map_object = mapscript.mapObj()
     """"Add all needed web metadata to the generated map file."""
     map_object.web.metadata.set("wms_title", "WMS senda fastapi")
-    map_object.web.metadata.set("wms_onlineresource", f"{full_request.url.scheme}://{full_request.url.netloc}/request")
+    map_object.web.metadata.set("wms_onlineresource", f"{scheme}://{netloc}/request")
     map_object.web.metadata.set("wms_srs", "EPSG:25833 EPSG:3978 EPSG:4326 EPSG:4269 EPSG:3857")
     map_object.web.metadata.set("wms_enable_request", "*")
     map_object.setSize(10000, 10000)
