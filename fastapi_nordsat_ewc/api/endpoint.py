@@ -34,7 +34,13 @@ router = APIRouter()
 def _generate_layer(layer_name, layer_data, start_time, end_time, layer):
     """Generate a layer based on the metadata from geotiff."""
 
-    layer.setProjection('init=epsg:3857')
+    try:
+        layer.setProjection(layer_data['proj4'])
+    except KeyError:
+        try:
+            layer.setProjection(layer_data['crs'])
+        except KeyError:
+            layer.setProjection('init=epsg:3857')
     layer.status = 1
     layer.data = f"{layer_data['uri']}"
     layer.type = mapscript.MS_LAYER_RASTER
