@@ -113,9 +113,22 @@ async def generate_map_config_and_respond(full_request: Request):
     for l in files_from_file_list:
         if l['layer'] not in parsed_list:
             parsed_list[l['layer']] = []
-        parsed_list[l['layer']].append({'uri': l['uri'],
-                                               'start_time': l['start_time'],
-                                               'area_extent': l['area_extent']})
+        _to_append = {}
+        if 'proj4' in l:
+            _to_append = {'uri': l['uri'],
+                          'start_time': l['start_time'],
+                          'area_extent': l['area_extent'],
+                          'proj4': l['proj4']}
+        elif 'crs' in l:
+            _to_append = {'uri': l['uri'],
+                          'start_time': l['start_time'],
+                          'area_extent': l['area_extent'],
+                          'crs': l['crs']}
+        else:
+            _to_append = {'uri': l['uri'],
+                          'start_time': l['start_time'],
+                          'area_extent': l['area_extent']}
+        parsed_list[l['layer']].append(_to_append)
     for layer_name in parsed_list:
         layer_data_sorted = sorted(parsed_list[layer_name], key=lambda d: d['start_time'])
         selected_element = None
