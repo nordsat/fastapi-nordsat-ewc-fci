@@ -137,8 +137,13 @@ async def generate_map_config_and_respond(full_request: Request):
                 if time_stamp in element['start_time']:
                     selected_element = element
                     break
+            #if not selected_element:
+            #    continue
+        #else:
         if not selected_element:
+            print(f"Time stamp {time_stamp} not found. Selects the latest and return an empty transparent image.")
             selected_element = layer_data_sorted[-1]
+            selected_element['uri'] = ""
         start_time = datetime.strptime(layer_data_sorted[0]['start_time'], "%Y-%m-%dT%H:%M:%SZ")
         end_time = datetime.strptime(layer_data_sorted[-1]['start_time'], "%Y-%m-%dT%H:%M:%SZ")
         layer = mapscript.layerObj()
