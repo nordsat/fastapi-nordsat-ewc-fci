@@ -48,7 +48,7 @@ def _generate_layer(layer_name, layer_data, start_time, end_time, layer):
     layer.name = layer_name
     layer.metadata.set("wms_title", layer_name)
     layer.metadata.set("wms_extent", f"{layer_data['area_extent'][0]} {layer_data['area_extent'][1]} {layer_data['area_extent'][2]} {layer_data['area_extent'][3]}")
-    layer.metadata.set("wms_timeextent", f'{start_time:%Y-%m-%dT%H:%M:%S}Z/{end_time:%Y-%m-%dT%H:%M:%S}Z/PT15M')
+    layer.metadata.set("wms_timeextent", f'{start_time:%Y-%m-%dT%H:%M:%S}Z/{end_time:%Y-%m-%dT%H:%M:%S}Z/PT10M')
     layer.metadata.set("wms_default", f'{end_time:%Y-%m-%dT%H:%M:%S}Z')
     print(f"Complete generate layer: ", layer_name)
 
